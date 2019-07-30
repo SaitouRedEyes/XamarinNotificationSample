@@ -11,6 +11,7 @@ namespace NotificationSample
     public class MainActivity : Activity
     {
         private int count;
+        private NotificationChannel nc;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -19,7 +20,7 @@ namespace NotificationSample
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
-            count = 0;
+            count = 1;
 
             Button buttonSendNotification = FindViewById<Button>(Resource.Id.buttonSendNotification);
 
@@ -28,8 +29,6 @@ namespace NotificationSample
 
         private void OnButtonSendNotificationClicked(object sender, System.EventArgs e)
         {
-            count++;
-
             // When the user clicks the notification, SecondActivity will start up.
             Intent resultIntent = new Intent(this, typeof(ReceiveNotification));
 
@@ -48,7 +47,7 @@ namespace NotificationSample
             PendingIntent resultPendingIntent = stackBuilder.GetPendingIntent(0, (int)PendingIntentFlags.UpdateCurrent);
             
             //Build Notification
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "location_notification")
                 .SetAutoCancel(true)
                 .SetContentIntent(resultPendingIntent)
                 .SetContentTitle("Button Clicked")
@@ -56,9 +55,29 @@ namespace NotificationSample
                 .SetSmallIcon(Resource.Drawable.ic_stat_button_click)
                 .SetContentText(string.Format("The button has been clicked {0} times.", count));
 
+            NotificationManager nf = (NotificationManager)GetSystemService(NotificationService);
+
+            //Creating a Channel
+            if (Build.VERSION.SdkInt > BuildVersionCodes.O)
+            {
+                // Notification channels are new in API 26 (and not a part of the
+                // support library). There is no need to create a notification
+                // channel on older versions of Android.
+                string channelName = "Meu Canal de Notificação";
+                string channelDescription = "Minha descrição do canal";
+                nc = new NotificationChannel("location_notification", channelName, NotificationImportance.Default)
+                {
+                    Description = channelDescription
+                };
+
+                nf.CreateNotificationChannel(nc);
+            }
+
             //Send Notification
-            NotificationManager nf = (NotificationManager)GetSystemService(Context.NotificationService);
-            nf.Notify(1000, builder.Build());
+            NotificationManagerCompat nmc = NotificationManagerCompat.From(this);
+            nmc.Notify(1000, builder.Build());
+
+            count++;
         }
     }
 }
