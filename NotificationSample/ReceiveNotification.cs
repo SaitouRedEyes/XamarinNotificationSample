@@ -25,7 +25,7 @@ namespace NotificationSample
             int count = Intent.Extras.GetInt("count", -1);
 
             // No count was passed? Then just return.
-            if (count <= 0)
+            if (count < 0)
                 return;
 
             Toast.MakeText(this, count.ToString() + " Notifications", ToastLength.Short).Show();
